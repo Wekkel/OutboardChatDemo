@@ -123,7 +123,7 @@ OutboardChatDemo/
 
 For a complete walkthrough of how this code works, see the accompanying Medium article:
 
-**[MEDIUM_ARTICLE_LINK]**
+https://medium.com/@wekkelekkel/run-your-own-chatgpt-locally-a-c-developers-first-steps-with-directml-and-local-llms-feb20a6686c3
 
 The source code is extensively commented to serve as a learning resource.
 
