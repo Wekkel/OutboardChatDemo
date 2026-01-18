@@ -1,0 +1,320 @@
+<!-- =========================================================================
+     MainWindow.xaml - The Main User Interface
+     =========================================================================
+
+     WHAT IS XAML?
+     =============
+     XAML (pronounced "zammel") stands for eXtensible Application Markup Language.
+     It's an XML-based language for defining user interfaces. Think of it as
+     HTML for desktop apps - you describe WHAT should appear on screen, and
+     WPF figures out HOW to draw it.
+
+     WHY USE XAML INSTEAD OF CODE?
+     =============================
+     1. Visual: It's easier to imagine the UI from nested tags than from code
+     2. Separation: Designers can work on XAML while developers work on C#
+     3. Data binding: Easy to connect UI elements to data with {Binding ...}
+     4. Tools: Visual Studio has a drag-and-drop designer for XAML
+
+     THE LAYOUT SYSTEM
+     =================
+     WPF uses a parent-child nesting system for layout:
+     - Window contains a Grid
+     - Grid contains Borders and other panels
+     - Borders contain content like TextBlocks and Buttons
+
+     Common layout containers:
+     - Grid: Rows and columns (like a table)
+     - StackPanel: Stack items vertically or horizontally
+     - DockPanel: Dock items to edges (left, right, top, bottom)
+     - Border: Wraps content with background, border, and padding
+
+     DATA BINDING
+     ============
+     The {Binding PropertyName} syntax connects UI elements to ViewModel properties:
+     - Text="{Binding StatusText}" - displays the StatusText property value
+     - Command="{Binding SendCommand}" - runs SendCommand when button is clicked
+     - ItemsSource="{Binding Messages}" - displays all items in the Messages list
+
+     ========================================================================= -->
+
+<!-- The Window is the top-level container. Everything in the app goes inside it. -->
+<Window x:Class="OutboardChatDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Outboard Assistant (DirectML ONNX)"
+        Width="980"
+        Height="680"
+        Background="#0B0F14"
+        WindowStartupLocation="CenterScreen">
+  <!--
+       xmlns = XML namespace. These tell XAML where to find UI element definitions.
+       Title = Window title bar text
+       Width/Height = Initial window size in pixels (device-independent pixels)
+       Background = Window background color (dark theme)
+       WindowStartupLocation = Where the window appears when the app starts
+  -->
+
+  <!--
+       MAIN GRID LAYOUT
+       ================
+       A Grid divides space into rows and columns.
+       Margin="16" adds 16 pixels of padding around the entire content.
+  -->
+  <Grid Margin="16">
+    <!--
+         Define three rows:
+         Row 0 (Auto): Header - takes only the space it needs
+         Row 1 (*): Chat area - takes all remaining space
+         Row 2 (Auto): Input area - takes only the space it needs
+    -->
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- ===================================================================
+         HEADER SECTION (Row 0)
+         Shows the app title and current status
+         =================================================================== -->
+    <Border Grid.Row="0"
+            CornerRadius="16"
+            Padding="14"
+            Background="#121826"
+            BorderBrush="#1F2A3A"
+            BorderThickness="1">
+      <!--
+           Border creates a rounded box with:
+           - CornerRadius: Rounded corners (16 pixels)
+           - Padding: Space inside the border (14 pixels)
+           - Background: Fill color
+           - BorderBrush: Border color
+           - BorderThickness: Border width
+      -->
+
+      <!-- DockPanel arranges children by docking them to edges -->
+      <DockPanel>
+        <!-- LEFT SIDE: App title and subtitle -->
+        <StackPanel DockPanel.Dock="Left">
+          <!--
+               StackPanel stacks children vertically by default.
+               Each child appears below the previous one.
+          -->
+          <TextBlock Text="Outboard Assistant"
+                     FontSize="22"
+                     FontWeight="SemiBold"
+                     Foreground="#E8EEF7"/>
+          <!-- App subtitle explaining the technology -->
+          <TextBlock Text="Local ONNX Runtime GenAI • DirectML • No server"
+                     Margin="0,4,0,0"
+                     Foreground="#A9B6C6"/>
+          <!-- Margin="left,top,right,bottom" - adds 4px space above -->
+        </StackPanel>
+
+        <!-- RIGHT SIDE: Status information -->
+        <StackPanel DockPanel.Dock="Right"
+                    HorizontalAlignment="Right">
+          <!--
+               STATUS TEXT
+               Shows current app state: "Loading model...", "Ready", "Generating...", etc.
+               Bound to the StatusText property in the ViewModel.
+               The green color (#9FE870) indicates positive status.
+          -->
+          <TextBlock Text="{Binding StatusText}"
+                     Foreground="#9FE870"
+                     HorizontalAlignment="Right"/>
+
+          <!--
+               MODEL PATH
+               Shows which AI model is loaded. Useful for debugging.
+               Smaller and grayer so it doesn't distract from main content.
+          -->
+          <TextBlock Text="{Binding ModelPath}"
+                     Foreground="#7C8DA6"
+                     FontSize="11"
+                     HorizontalAlignment="Right"/>
+
+        </StackPanel>
+
+      </DockPanel>
+    </Border>
+
+    <!-- ===================================================================
+         CHAT SECTION (Row 1)
+         Shows the conversation and current selections
+         =================================================================== -->
+    <Border Grid.Row="1"
+            Margin="0,14,0,14"
+            CornerRadius="16"
+            Background="#0F1520"
+            BorderBrush="#1F2A3A"
+            BorderThickness="1">
+      <!-- Margin adds vertical spacing between header, chat, and input -->
+
+      <!-- Inner Grid to split chat area into messages (top) and status bar (bottom) -->
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"/>     <!-- Messages take remaining space -->
+          <RowDefinition Height="Auto"/>  <!-- Status bar takes only what it needs -->
+        </Grid.RowDefinitions>
+
+        <!--
+             SCROLLABLE MESSAGE LIST
+             x:Name gives this element a name so we can reference it in code-behind.
+             We use this to auto-scroll to new messages.
+        -->
+        <ScrollViewer x:Name="ChatScrollViewer"
+              VerticalScrollBarVisibility="Auto"
+              Margin="12">
+
+          <!--
+               ITEMS CONTROL
+               Displays a list of items (chat messages) using a template.
+               ItemsSource binds to the Messages collection in the ViewModel.
+               Each item in the collection is rendered using the ItemTemplate.
+          -->
+          <ItemsControl ItemsSource="{Binding Messages}">
+            <!--
+                 DATA TEMPLATE
+                 Defines how each ChatMessage object should be displayed.
+                 The bindings inside refer to properties on ChatMessage
+                 (Sender, Text, BubbleBackground).
+            -->
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <!-- Each message is a rounded bubble -->
+                <Border CornerRadius="14"
+                        Padding="12"
+                        Margin="0,0,0,10"
+                        Background="{Binding BubbleBackground}">
+                  <!--
+                       Background is bound to each message's BubbleBackground property.
+                       This allows different colors for user vs assistant messages.
+                  -->
+                  <StackPanel>
+                    <!-- Sender name (e.g., "You" or "Assistant") -->
+                    <TextBlock Text="{Binding Sender}"
+                               Foreground="#7C8DA6"
+                               FontSize="11"/>
+                    <!--
+                         Message text
+                         Using TextBox instead of TextBlock allows text selection/copying.
+                         IsReadOnly="True" prevents editing.
+                    -->
+                    <TextBox Text="{Binding Text}"
+                             IsReadOnly="True"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Foreground="#E8EEF7"
+                             FontSize="14"
+                             Margin="0,4,0,0"
+                             TextWrapping="Wrap"
+                             IsReadOnlyCaretVisible="True"
+                             Focusable="True"
+                             VerticalScrollBarVisibility="Auto"
+                             MaxHeight="260"/>
+                    <!-- MaxHeight limits long messages; they scroll internally -->
+
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <!--
+             STATUS/ACTION CARD
+             Shows currently selected products and captured email.
+             Gives the user feedback on what information has been collected.
+        -->
+        <Border Grid.Row="1"
+                Margin="12"
+                Padding="12"
+                CornerRadius="14"
+                Background="#0B0F14"
+                BorderBrush="#1F2A3A"
+                BorderThickness="1">
+          <StackPanel Orientation="Horizontal"
+                      VerticalAlignment="Center">
+            <!--
+                 Display selected packages and email.
+                 SelectedPackagesText and CapturedEmail are computed properties
+                 that format the data nicely (showing "—" when empty).
+            -->
+            <TextBlock Text="Selected packages:"
+                       Foreground="#7C8DA6"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding SelectedPackagesText}"
+                       Foreground="#E8EEF7"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="• Email:"
+                       Foreground="#7C8DA6"
+                       Margin="12,0,0,0"
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding CapturedEmail}"
+                       Foreground="#E8EEF7"
+                       Margin="8,0,0,0"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- ===================================================================
+         INPUT SECTION (Row 2)
+         Text input field and send button
+         =================================================================== -->
+    <Border Grid.Row="2"
+            CornerRadius="16"
+            Padding="12"
+            Background="#121826"
+            BorderBrush="#1F2A3A"
+            BorderThickness="1">
+      <!--
+           DockPanel with LastChildFill="True"
+           The last child (TextBox) fills all remaining space after the button.
+      -->
+      <DockPanel LastChildFill="True">
+        <!--
+             SEND BUTTON
+             Docked to the right side.
+             Content changes between "Send" and "Thinking..." via binding.
+             Command binding connects to SendCommand in the ViewModel.
+        -->
+        <Button Content="{Binding SendButtonText}"
+                Command="{Binding SendCommand}"
+                DockPanel.Dock="Right"
+                Width="140"
+                Height="42"
+                Margin="12,0,0,0"
+                Background="#2A3BFF"
+                Foreground="White"
+                BorderThickness="0"
+                FontWeight="SemiBold"/>
+
+        <!--
+             INPUT TEXT BOX
+             Where the user types their message.
+             Two-way bound to UserInput property (UpdateSourceTrigger=PropertyChanged
+             means it updates immediately as you type, not just when you leave the box).
+             KeyDown event is handled in code-behind to detect Enter key.
+        -->
+        <TextBox x:Name="UserInputBox"
+         Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+         MinHeight="42"
+         Padding="10"
+         Foreground="#E8EEF7"
+         Background="#0B0F14"
+         BorderBrush="#1F2A3A"
+         BorderThickness="1"
+         FontSize="14"
+         VerticalContentAlignment="Center"
+         AcceptsReturn="False"
+         KeyDown="UserInputBox_KeyDown"/>
+        <!-- AcceptsReturn="False" means Enter doesn't add a newline -->
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

@@ -1,0 +1,121 @@
+<!-- =========================================================================
+     OutboardChatDemo.csproj - The Project Configuration File
+     =========================================================================
+
+     WHAT IS A .CSPROJ FILE?
+     =======================
+     This is the "recipe" for building your application. It tells the .NET
+     build system:
+     - What kind of application to create (exe, dll, etc.)
+     - What version of .NET to target
+     - What libraries (NuGet packages) the project depends on
+     - What files to include in the build
+
+     SDK-STYLE PROJECT
+     =================
+     The first line (Sdk="Microsoft.NET.Sdk") means this is a "modern"
+     SDK-style project file. These are much simpler than old-style .csproj
+     files because they have sensible defaults. For example, all .cs files
+     in the project folder are automatically included.
+
+     ========================================================================= -->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- =====================================================================
+       PROJECT PROPERTIES
+       These define the basic characteristics of your application.
+       ===================================================================== -->
+  <PropertyGroup>
+    <!--
+         OutputType: What kind of output to produce
+         - WinExe = Windows application (no console window)
+         - Exe = Console application (has console window)
+         - Library = A DLL that other apps can reference
+    -->
+    <OutputType>WinExe</OutputType>
+
+    <!--
+         TargetFramework: Which version of .NET to target
+         - net8.0-windows means .NET 8 with Windows-specific APIs
+         - The "-windows" suffix is required for WPF apps
+         - You need the .NET 8 SDK installed to build this
+    -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+
+    <!--
+         UseWPF: Enable Windows Presentation Foundation
+         - This adds references to WPF assemblies
+         - Enables XAML compilation
+         - Required for any WPF application
+    -->
+    <UseWPF>true</UseWPF>
+
+    <!--
+         Nullable: Enable nullable reference types
+         - Helps catch null reference bugs at compile time
+         - string? means "this can be null"
+         - string means "this should never be null"
+         - The compiler warns you if you might access null
+    -->
+    <Nullable>enable</Nullable>
+
+    <!--
+         ImplicitUsings: Auto-import common namespaces
+         - Adds "using System;" and other common imports automatically
+         - Reduces boilerplate at the top of each file
+    -->
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- =====================================================================
+       DEPENDENCIES (NuGet Packages)
+       External libraries the project needs to work.
+       ===================================================================== -->
+  <ItemGroup>
+    <!--
+         Microsoft.ML.OnnxRuntimeGenAI.DirectML
+         ======================================
+         This is the star of the show! It's Microsoft's library for running
+         generative AI models locally using ONNX Runtime.
+
+         Key features:
+         - Runs ONNX-format AI models on your local machine
+         - Uses DirectML for GPU acceleration (works with AMD, Intel, NVIDIA)
+         - Includes tokenization for text-to-tokens conversion
+         - Handles streaming text generation
+
+         Version 0.11.4 is the version we're using. You can check for newer
+         versions at: https://www.nuget.org/packages/Microsoft.ML.OnnxRuntimeGenAI.DirectML
+
+         To install a NuGet package, run:
+         dotnet add package Microsoft.ML.OnnxRuntimeGenAI.DirectML
+    -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.11.4" />
+
+    <!--
+         MODEL FILES
+         ===========
+         This section tells MSBuild to copy the AI model files to the output
+         directory when building.
+
+         The model folder contains:
+         - model.onnx + model.onnx.data: The actual neural network (~9GB!)
+         - tokenizer.json: How to convert text to tokens
+         - config.json, genai_config.json: Model configuration
+         - Other supporting files
+
+         "**\*" means "all files in all subdirectories"
+         "PreserveNewest" means "only copy if the file has changed"
+         (This saves time on rebuilds - no need to copy 9GB every time!)
+
+         IMPORTANT: You need to download or create your model files separately.
+         They're not included in the NuGet package because they're huge!
+    -->
+    <Content Include="Models\Qwen3-14B-Instruct-DirectML-INT4\**\*">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </Content>
+
+  </ItemGroup>
+
+</Project>

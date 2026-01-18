@@ -1,0 +1,71 @@
+<!-- =========================================================================
+     App.xaml - The Application Definition File
+     =========================================================================
+
+     WHAT IS THIS FILE?
+     ==================
+     App.xaml is the "entry point" configuration for a WPF application.
+     It tells WPF:
+     1. What class represents the Application (x:Class)
+     2. Which window to show when the app starts (StartupUri)
+     3. What resources (styles, colors, templates) are shared app-wide
+
+     THE APPLICATION CLASS
+     =====================
+     Every WPF app has an Application object that manages:
+     - The application lifecycle (starting, running, shutting down)
+     - Global resources available to all windows
+     - Application-wide settings and properties
+
+     The x:Class attribute points to OutboardChatDemo.App, which is the
+     C# class in App.xaml.cs. For simple apps like this one, that file
+     is usually empty because the default behavior is fine.
+
+     STARTUP URI
+     ===========
+     StartupUri="MainWindow.xaml" tells WPF:
+     "When the application starts, create and show MainWindow."
+
+     This is the simplest way to start a WPF app. For more complex apps,
+     you might override the OnStartup method in App.xaml.cs to do custom
+     initialization before showing the window.
+
+     APPLICATION RESOURCES
+     =====================
+     The <Application.Resources> section can contain:
+     - Styles: Define how controls look (colors, fonts, sizes)
+     - Templates: Define the structure of controls
+     - Brushes: Reusable colors and gradients
+     - Converters: Transform data for display
+
+     In this demo app, we don't use global resources - each control defines
+     its own appearance inline. In a larger app, you'd typically define
+     styles here to keep things consistent and avoid repetition.
+
+     ========================================================================= -->
+
+<!-- Application definition with namespace references and startup configuration -->
+<Application x:Class="OutboardChatDemo.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+  <!--
+       x:Class = The C# class that represents this application
+       xmlns = XML namespaces for WPF controls and XAML features
+       StartupUri = The first window to display when the app launches
+  -->
+
+  <!-- Application-wide resources go here. Currently empty for this demo. -->
+  <Application.Resources>
+    <!--
+         In a production app, you might add things like:
+
+         <Style TargetType="Button">
+           <Setter Property="Background" Value="#2A3BFF"/>
+           <Setter Property="Foreground" Value="White"/>
+         </Style>
+
+         This would make ALL buttons in the app use those colors by default.
+    -->
+  </Application.Resources>
+</Application>
